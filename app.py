@@ -65,6 +65,22 @@ class Show(db.Model):
     venue = db.relationship('Venue', backref='show', lazy=True)
     artist = db.relationship('Artist', backref='show', lazy=True)
 
+class Genre(db.Model):
+    __tablename__ = 'Genre'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+
+# Create association tables for genre
+venue_genre = db.Table('venue_genre',
+    db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
+    db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
+)
+artist_genre = db.Table('artist_genre',
+    db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
+    db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
+)
+
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#

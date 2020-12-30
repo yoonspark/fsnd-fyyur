@@ -82,7 +82,7 @@ artist_genre = db.Table('artist_genre',
 )
 
 #----------------------------------------------------------------------------#
-# Filters.
+# Filters
 #----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
@@ -96,43 +96,55 @@ def format_datetime(value, format='medium'):
 app.jinja_env.filters['datetime'] = format_datetime
 
 #----------------------------------------------------------------------------#
-# Controllers.
+# Controllers
 #----------------------------------------------------------------------------#
 
 @app.route('/')
 def index():
   return render_template('pages/home.html')
 
-
 #  Venues
 #  ----------------------------------------------------------------
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
-  return render_template('pages/venues.html', areas=data);
+    # Get desired venue-level information
+    venue_list = (db.session
+        .query(
+            Venue.id.label('id'),
+            Venue.name.label('name'),
+            Venue.city.label('city'),
+            Venue.state.label('state'),
+            db.func.count(Show.id).label('n_show'),
+        )
+        .outerjoin(Show, Venue.id == Show.venue_id)
+        .group_by(Venue.id)
+        .order_by(Venue.city, Venue.name)
+        .all()
+    )
+
+    # Package data to render
+    data = {}
+    for v in venue_list:
+        # Initialize location entry if not existing
+        if (v.city, v.state) not in data:
+            data[(v.city, v.state)] = {
+                'city': v.city,
+                'state': v.state,
+                'venues': [],
+            }
+
+        # Append each venue to the corresponding location
+        data[(v.city, v.state)]['venues'].append({
+            'id': v.id,
+            'name': v.name,
+            'num_upcoming_shows': v.n_show,
+        })
+
+    # Sort and format data
+    data = [data[k] for k in sorted(data.keys())]
+
+    return render_template('pages/venues.html', areas=data)
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():

@@ -1,3 +1,5 @@
+from datetime import datetime
+import pytz
 import json
 import dateutil.parser
 import babel
@@ -118,6 +120,7 @@ def venues():
             db.func.count(Show.id).label('n_show'),
         )
         .outerjoin(Show, Venue.id == Show.venue_id)
+        .filter(Show.start_time > datetime.utcnow().astimezone(pytz.timezone("UTC")))
         .group_by(Venue.id)
         .order_by(Venue.city, Venue.name)
         .all()

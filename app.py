@@ -98,6 +98,16 @@ def format_datetime(value, format='medium'):
 app.jinja_env.filters['datetime'] = format_datetime
 
 #----------------------------------------------------------------------------#
+# Helpers
+#----------------------------------------------------------------------------#
+
+def time_now():
+    return (datetime
+        .utcnow()
+        .astimezone(pytz.timezone("UTC"))
+    )
+
+#----------------------------------------------------------------------------#
 # Controllers
 #----------------------------------------------------------------------------#
 
@@ -151,18 +161,47 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+    # Get search terms
+    search_term = request.form.get('search_term', '')
+
+    # Identify upcoming shows
+    new_shows = (db.session
+        .query(
+            Show.id.label('id'),
+            Show.venue_id.label('venue_id'),
+        )
+        .filter(Show.start_time > time_now())
+        .subquery()
+    )
+
+    # Search venues
+    venue_list = (db.session
+        .query(
+            Venue.id.label('id'),
+            Venue.name.label('name'),
+            db.func.count(new_shows.c.id).label('n_new_show'),
+        )
+        .filter(Venue.name.ilike("%{}%".format(search_term)))
+        .outerjoin(
+            new_shows,
+            Venue.id == new_shows.c.venue_id
+        )
+        .group_by(Venue.id)
+        .order_by(Venue.name)
+        .all()
+    )
+
+    # Package response data
+    response = {'count': 0, 'data': []}
+    for v in venue_list:
+        response['count'] = response['count'] + 1
+        response['data'].append({
+            'id': v.id,
+            'name': v.name,
+            'num_upcoming_shows': v.n_new_show,
+        })
+
+    return render_template('pages/search_venues.html', results=response, search_term=search_term)
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):

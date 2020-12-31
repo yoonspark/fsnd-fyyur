@@ -117,7 +117,7 @@ def venues():
             Venue.name.label('name'),
             Venue.city.label('city'),
             Venue.state.label('state'),
-            db.func.count(Show.id).label('n_show'),
+            db.func.count(Show.id).label('n_new_show'),
         )
         .outerjoin(Show, Venue.id == Show.venue_id)
         .filter(Show.start_time > datetime.utcnow().astimezone(pytz.timezone("UTC")))
@@ -141,7 +141,7 @@ def venues():
         data[(v.city, v.state)]['venues'].append({
             'id': v.id,
             'name': v.name,
-            'num_upcoming_shows': v.n_show,
+            'num_upcoming_shows': v.n_new_show,
         })
 
     # Sort and format data

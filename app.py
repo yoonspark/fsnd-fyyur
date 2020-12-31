@@ -41,6 +41,10 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String())
 
+    def __repr__(self):
+        return f'<Venue ID: {self.id}, name: {self.name}>'
+
+
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -55,6 +59,10 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String())
 
+    def __repr__(self):
+        return f'<Artist ID: {self.id}, name: {self.name}>'
+
+
 class Show(db.Model):
     __tablename__ = 'Show'
 
@@ -67,11 +75,19 @@ class Show(db.Model):
     venue = db.relationship('Venue', backref='show', lazy=True)
     artist = db.relationship('Artist', backref='show', lazy=True)
 
+    def __repr__(self):
+        return f'<Show ID: {self.id}>'
+
+
 class Genre(db.Model):
     __tablename__ = 'Genre'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+
+    def __repr__(self):
+        return f'<Genre ID: {self.id}, name: {self.name}>'
+
 
 # Create association tables for genre
 venue_genre = db.Table('venue_genre',

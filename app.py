@@ -79,16 +79,6 @@ class Show(db.Model):
         return f'<Show ID: {self.id}>'
 
 
-class Genre(db.Model):
-    __tablename__ = 'Genre'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-
-    def __repr__(self):
-        return f'<Genre ID: {self.id}, name: {self.name}>'
-
-
 # Create association tables for genre
 venue_genre = db.Table('venue_genre',
     db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
@@ -98,6 +88,19 @@ artist_genre = db.Table('artist_genre',
     db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
 )
+
+
+class Genre(db.Model):
+    __tablename__ = 'Genre'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+
+    venues = db.relationship('Venue', secondary=venue_genre, backref='genres', lazy=True)
+    artists = db.relationship('Artist', secondary=artist_genre, backref='genres', lazy=True)
+
+    def __repr__(self):
+        return f'<Genre ID: {self.id}, name: {self.name}>'
 
 #----------------------------------------------------------------------------#
 # Filters

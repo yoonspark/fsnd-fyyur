@@ -120,6 +120,16 @@ def index():
 
 @app.route('/venues')
 def venues():
+    # Identify upcoming shows
+    new_shows = (db.session
+        .query(
+            Show.id.label('id'),
+            Show.venue_id.label('venue_id'),
+        )
+        .filter(Show.start_time > time_now())
+        .subquery()
+    )
+
     # Get desired venue-level information
     venue_list = (db.session
         .query(
@@ -129,8 +139,10 @@ def venues():
             Venue.state.label('state'),
             db.func.count(Show.id).label('n_new_show'),
         )
-        .outerjoin(Show, Venue.id == Show.venue_id)
-        .filter(Show.start_time > datetime.utcnow().astimezone(pytz.timezone("UTC")))
+        .outerjoin(
+            new_shows,
+            Venue.id == new_shows.c.venue_id
+        )
         .group_by(Venue.id)
         .order_by(Venue.city, Venue.name)
         .all()

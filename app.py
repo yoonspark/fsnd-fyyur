@@ -140,32 +140,29 @@ def index():
 @app.route('/venues')
 def venues():
     # Identify upcoming shows
-    new_shows = (db.session
-        .query(
-            Show.id.label('id'),
-            Show.venue_id.label('venue_id'),
-        )
-        .filter(Show.start_time > time_now())
-        .subquery()
-    )
+    new_shows = db.session.query(
+        Show.id.label('id'),
+        Show.venue_id.label('venue_id'),
+    ).filter(
+        Show.start_time > time_now(),
+    ).subquery()
 
     # Get desired venue-level information
-    venue_list = (db.session
-        .query(
-            Venue.id.label('id'),
-            Venue.name.label('name'),
-            Venue.city.label('city'),
-            Venue.state.label('state'),
-            db.func.count(Show.id).label('n_new_show'),
-        )
-        .outerjoin(
-            new_shows,
-            Venue.id == new_shows.c.venue_id
-        )
-        .group_by(Venue.id)
-        .order_by(Venue.city, Venue.name)
-        .all()
-    )
+    venue_list = db.session.query(
+        Venue.id.label('id'),
+        Venue.name.label('name'),
+        Venue.city.label('city'),
+        Venue.state.label('state'),
+        db.func.count(Show.id).label('n_new_show'),
+    ).outerjoin(
+        new_shows,
+        Venue.id == new_shows.c.venue_id,
+    ).group_by(
+        Venue.id,
+    ).order_by(
+        Venue.city,
+        Venue.name,
+    ).all()
 
     # Package data to render
     data = {}
@@ -197,31 +194,28 @@ def search_venues():
     search_term = request.form.get('search_term', '')
 
     # Identify upcoming shows
-    new_shows = (db.session
-        .query(
-            Show.id.label('id'),
-            Show.venue_id.label('venue_id'),
-        )
-        .filter(Show.start_time > time_now())
-        .subquery()
-    )
+    new_shows = db.session.query(
+        Show.id.label('id'),
+        Show.venue_id.label('venue_id'),
+    ).filter(
+        Show.start_time > time_now(),
+    ).subquery()
 
     # Search venues
-    venue_list = (db.session
-        .query(
-            Venue.id.label('id'),
-            Venue.name.label('name'),
-            db.func.count(new_shows.c.id).label('n_new_show'),
-        )
-        .filter(Venue.name.ilike("%{}%".format(search_term)))
-        .outerjoin(
-            new_shows,
-            Venue.id == new_shows.c.venue_id
-        )
-        .group_by(Venue.id)
-        .order_by(Venue.name)
-        .all()
-    )
+    venue_list = db.session.query(
+        Venue.id.label('id'),
+        Venue.name.label('name'),
+        db.func.count(new_shows.c.id).label('n_new_show'),
+    ).filter(
+        Venue.name.ilike("%{}%".format(search_term)),
+    ).outerjoin(
+        new_shows,
+        Venue.id == new_shows.c.venue_id,
+    ).group_by(
+        Venue.id,
+    ).order_by(
+        Venue.name,
+    ).all()
 
     # Package response data
     response = {'count': 0, 'data': []}

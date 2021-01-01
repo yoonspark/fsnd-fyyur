@@ -1,5 +1,6 @@
 __pycache__
 .venv/
+.vscode/
 
 # OS generated files
 .DS_Store

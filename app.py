@@ -3,7 +3,7 @@ import pytz
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 import logging
@@ -44,6 +44,21 @@ class Venue(db.Model):
     def __repr__(self):
         return f'<Venue ID: {self.id}, name: {self.name}>'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'city': self.city,
+            'state': self.state,
+            'address': self.address,
+            'phone': self.phone,
+            'image_link': self.image_link,
+            'facebook_link': self.facebook_link,
+            'website': self.website,
+            'seeking_talent': self.seeking_talent,
+            'seeking_description': self.seeking_description,
+            'genres': [g.name for g in self.genres],
+        }
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -62,6 +77,20 @@ class Artist(db.Model):
     def __repr__(self):
         return f'<Artist ID: {self.id}, name: {self.name}>'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'city': self.city,
+            'state': self.state,
+            'phone': self.phone,
+            'image_link': self.image_link,
+            'facebook_link': self.facebook_link,
+            'website': self.website,
+            'seeking_venue': self.seeking_venue,
+            'seeking_description': self.seeking_description,
+            'genres': [g.name for g in self.genres],
+        }
 
 class Show(db.Model):
     __tablename__ = 'Show'
@@ -78,6 +107,13 @@ class Show(db.Model):
     def __repr__(self):
         return f'<Show ID: {self.id}>'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'start_time': self.start_time,
+            'venue_id': self.venue_id,
+            'artist_id': self.artist_id,
+        }
 
 # Create association tables for genre
 venue_genre = db.Table('venue_genre',
@@ -88,7 +124,6 @@ artist_genre = db.Table('artist_genre',
     db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
 )
-
 
 class Genre(db.Model):
     __tablename__ = 'Genre'
@@ -352,6 +387,64 @@ def delete_venue(venue_id):
 
     return None
 
+
+@app.route('/venues/<int:venue_id>/edit', methods=['GET'])
+def edit_venue_form(venue_id):
+    v = Venue.query.get(venue_id)
+    if not v:
+        abort(404)
+
+    venue = v.to_dict()
+
+    # Populate form with existing values
+    form = VenueForm()
+    form.name.data = venue['name']
+    form.city.data = venue['city']
+    form.state.data = venue['state']
+    form.address.data = venue['address']
+    form.phone.data = venue['phone']
+    form.image_link.data = venue['image_link']
+    form.facebook_link.data = venue['facebook_link']
+    form.genres.data = venue['genres']
+
+    return render_template('forms/edit_venue.html', form=form, venue=venue)
+
+
+@app.route('/venues/<int:venue_id>/edit', methods=['POST'])
+def edit_venue(venue_id):
+    v = Venue.query.get(venue_id)
+    if not v:
+        abort(404)
+    vid = v.id
+
+    # Update venue info
+    v.name = request.form.get('name')
+    v.city = request.form.get('city')
+    v.state = request.form.get('state')
+    v.address = request.form.get('address')
+    v.phone = request.form.get('phone')
+    v.image_link = request.form.get('image_link')
+    v.facebook_link = request.form.get('facebook_link')
+
+    # Save into database
+    error = False
+    try:
+        db.session.add(v)
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+    if error:
+        flash('An error occurred. Venue <ID: ' + str(vid) + '> could not be updated.')
+        abort(400)
+    else:
+        flash('Venue <ID: ' + str(vid) + '> was successfully updated!')
+
+    return redirect(url_for('show_venue', venue_id=venue_id))
+
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
@@ -489,32 +582,6 @@ def edit_artist_submission(artist_id):
   # artist record with ID <artist_id> using the new attributes
 
   return redirect(url_for('show_artist', artist_id=artist_id))
-
-@app.route('/venues/<int:venue_id>/edit', methods=['GET'])
-def edit_venue(venue_id):
-  form = VenueForm()
-  venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
-  # TODO: populate form with values from venue with ID <venue_id>
-  return render_template('forms/edit_venue.html', form=form, venue=venue)
-
-@app.route('/venues/<int:venue_id>/edit', methods=['POST'])
-def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
-  return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
 #  ----------------------------------------------------------------

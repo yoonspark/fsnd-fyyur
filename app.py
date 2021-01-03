@@ -298,24 +298,11 @@ def show_venue(venue_id):
         s['start_time'] = s['start_time'].isoformat()
 
     # Package data to render
-    data = {
-        'id': v.id,
-        'name': v.name,
-        'address': v.address,
-        'city': v.city,
-        'state': v.state,
-        'phone': v.phone,
-        'website': v.website,
-        'facebook_link': v.facebook_link,
-        'seeking_talent': v.seeking_talent,
-        'seeking_description': v.seeking_description,
-        'image_link': v.image_link,
-        'genres': [g.name for g in v.genres],
-        'past_shows': old_shows,
-        'upcoming_shows': new_shows,
-        'past_shows_count': len(old_shows),
-        'upcoming_shows_count': len(new_shows),
-    }
+    data = v.to_dict()
+    data['past_shows'] = old_shows
+    data['past_shows_count'] = len(old_shows)
+    data['upcoming_shows'] = new_shows
+    data['upcoming_shows_count'] = len(new_shows)
 
     return render_template('pages/show_venue.html', venue=data)
 
@@ -393,7 +380,6 @@ def edit_venue_form(venue_id):
     v = Venue.query.get(venue_id)
     if not v:
         abort(404)
-
     venue = v.to_dict()
 
     # Populate form with existing values

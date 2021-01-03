@@ -72,8 +72,8 @@ class Show(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
 
-    venue = db.relationship('Venue', backref='show', lazy=True)
-    artist = db.relationship('Artist', backref='show', lazy=True)
+    venue = db.relationship('Venue', backref='shows', lazy=True)
+    artist = db.relationship('Artist', backref='shows', lazy=True)
 
     def __repr__(self):
         return f'<Show ID: {self.id}>'
@@ -328,12 +328,29 @@ def create_venue():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    v = Venue.query.get(venue_id)
+    venue_name = v.name
+    error = False
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+    try:
+        for s in v.shows:
+            db.session.delete(s)
+        db.session.delete(v)
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+
+    if error:
+        flash('An error occurred. Venue \"' + venue_name + '\" could not be deleted.')
+        abort(400)
+    else:
+        flash('Venue \"' + venue_name + '\" was successfully deleted!')
+
+    return None
 
 #  Artists
 #  ----------------------------------------------------------------

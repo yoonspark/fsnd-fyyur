@@ -38,6 +38,14 @@
 			<i class="fas fa-moon"></i> Not currently seeking performance venues
 		</p>
 		{% endif %}
+		<div>
+			<button id="edit_artist" onclick="editArtist(event)" class="btn btn-primary btn-lg" data-id="{{ artist.id }}">
+				Edit
+			</button>
+			<button id="delete_artist" onclick="deleteArtist(event)" class="btn btn-primary btn-lg" data-id="{{ artist.id }}">
+				Delete
+			</button>
+		</div>
 	</div>
 	<div class="col-sm-6">
 		<img src="{{ artist.image_link }}" alt="Venue Image" />
@@ -71,6 +79,28 @@
 		{% endfor %}
 	</div>
 </section>
+<script>
+	function editArtist(e) {
+		const id = e.target.dataset.id;
+		fetch(`/artists/${id}/edit`, {
+			method: 'GET'
+		}).then(response => {
+			window.location.href = `/artists/${id}/edit`;
+		}).catch(error => {
+			console.log(error);
+		})
+	}
 
+	function deleteArtist(e) {
+		const id = e.target.dataset.id;
+		fetch(`/artists/${id}`, {
+			method: 'DELETE'
+		}).then(response => {
+			window.location.href = response.url;
+		}).catch(error => {
+			console.log(error);
+		})
+	}
+</script>
 {% endblock %}
 

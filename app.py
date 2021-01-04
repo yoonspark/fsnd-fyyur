@@ -461,6 +461,8 @@ def artists():
     artists = db.session.query(
         Artist.id.label('id'),
         Artist.name.label('name'),
+    ).order_by(
+        Artist.name,
     ).all()
 
     # Package data for rendering
@@ -656,6 +658,35 @@ def edit_artist(artist_id):
         flash('Artist <ID: ' + str(aid) + '> was successfully updated!')
 
     return redirect(url_for('show_artist', artist_id=artist_id))
+
+
+@app.route('/artists/<artist_id>', methods=['DELETE'])
+def delete_artist(artist_id):
+    a = Artist.query.get(artist_id)
+    if not a:
+        abort(404)
+    artist_name = a.name
+    error = False
+
+    try:
+        for s in a.shows:
+            db.session.delete(s)
+        db.session.delete(a)
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+
+    if error:
+        flash('An error occurred. Artist \"' + artist_name + '\" could not be deleted.')
+        abort(400)
+    else:
+        flash('Artist \"' + artist_name + '\" was successfully deleted!')
+
+    return redirect(url_for('index'))
 
 #  Shows
 #  ----------------------------------------------------------------

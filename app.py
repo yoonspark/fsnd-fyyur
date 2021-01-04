@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 import pytz
 import json
@@ -333,7 +334,7 @@ def create_venue():
         image_link = request.form.get('image_link'),
         facebook_link = request.form.get('facebook_link'),
         website = request.form.get('website'),
-        seeking_talent = request.form.get('seeking_talent', False),
+        seeking_talent = True if request.form.get('seeking_talent') else False,
         seeking_description = request.form.get('seeking_description'),
     )
     v.genres = [get_genre(name=g) for g in request.form.getlist('genres')]
@@ -424,7 +425,7 @@ def edit_venue(venue_id):
     v.image_link = request.form.get('image_link')
     v.facebook_link = request.form.get('facebook_link')
     v.website = request.form.get('website')
-    v.seeking_talent = request.form.get('seeking_talent')
+    v.seeking_talent = True if request.form.get('seeking_talent') else False
     v.seeking_description = request.form.get('seeking_description')
     v.genres = [get_genre(name=g) for g in request.form.getlist('genres')]
 
@@ -565,7 +566,7 @@ def create_artist():
         image_link = request.form.get('image_link'),
         facebook_link = request.form.get('facebook_link'),
         website = request.form.get('website'),
-        seeking_venue = request.form.get('seeking_venue', False),
+        seeking_venue = True if request.form.get('seeking_venue') else False,
         seeking_description = request.form.get('seeking_description'),
     )
     a.genres = [get_genre(name=g) for g in request.form.getlist('genres')]
@@ -627,7 +628,7 @@ def edit_artist(artist_id):
     a.image_link = request.form.get('image_link')
     a.facebook_link = request.form.get('facebook_link')
     a.website = request.form.get('website')
-    a.seeking_venue = request.form.get('seeking_venue')
+    a.seeking_venue = True if request.form.get('seeking_venue') else False
     a.seeking_description = request.form.get('seeking_description')
     a.genres = [get_genre(name=g) for g in request.form.getlist('genres')]
 

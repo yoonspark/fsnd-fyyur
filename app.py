@@ -278,6 +278,8 @@ def search_venues():
 def show_venue(venue_id):
     # Get venue info
     v = Venue.query.get(venue_id)
+    if not v:
+        abort(404)
 
     # Query all shows at the venue
     s_query = db.session.query(
@@ -361,6 +363,8 @@ def create_venue():
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
     v = Venue.query.get(venue_id)
+    if not v:
+        abort(404)
     venue_name = v.name
     error = False
 
@@ -511,6 +515,8 @@ def search_artists():
 def show_artist(artist_id):
     # Get artist info
     a = Artist.query.get(artist_id)
+    if not a:
+        abort(404)
 
     # Query all shows by the artist
     s_query = db.session.query(

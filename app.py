@@ -315,22 +315,23 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue():
-    error = False
+    v = Venue(
+        name = request.form.get('name'),
+        city = request.form.get('city'),
+        state = request.form.get('state'),
+        address = request.form.get('address'),
+        phone = request.form.get('phone'),
+        image_link = request.form.get('image_link'),
+        facebook_link = request.form.get('facebook_link'),
+        website = request.form.get('website'),
+        seeking_talent = request.form.get('seeking_talent', False),
+        seeking_description = request.form.get('seeking_description'),
+    )
+    v.genres = [Genre(name=g) for g in request.form.getlist('genres')]
 
+    error = False
     try:
-        venue = Venue(
-            name = request.form.get('name'),
-            city = request.form.get('city'),
-            state = request.form.get('state'),
-            address = request.form.get('address'),
-            phone = request.form.get('phone'),
-            image_link = request.form.get('image_link'),
-            facebook_link = request.form.get('facebook_link'),
-            website = request.form.get('website'),
-            seeking_talent = request.form.get('seeking_talent', False),
-            seeking_description = request.form.get('seeking_description'),
-        )
-        db.session.add(venue)
+        db.session.add(v)
         db.session.commit()
     except:
         error = True
@@ -338,7 +339,6 @@ def create_venue():
         print(sys.exc_info())
     finally:
         db.session.close()
-
     if error:
         flash('An error occurred. Venue \"' + request.form.get('name') + '\" could not be listed.')
         abort(400)

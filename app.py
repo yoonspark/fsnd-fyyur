@@ -130,6 +130,7 @@ class Genre(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    db.UniqueConstraint(name)
 
     venues = db.relationship('Venue', secondary=venue_genre, backref='genres', lazy=True)
     artists = db.relationship('Artist', secondary=artist_genre, backref='genres', lazy=True)
@@ -160,6 +161,13 @@ def time_now():
         .utcnow()
         .astimezone(pytz.timezone("UTC"))
     )
+
+def get_genre(name):
+    g = Genre.query.filter(Genre.name == name).first()
+    if not g:
+        g = Genre(name=name)
+
+    return g
 
 #----------------------------------------------------------------------------#
 # Controllers
@@ -327,7 +335,7 @@ def create_venue():
         seeking_talent = request.form.get('seeking_talent', False),
         seeking_description = request.form.get('seeking_description'),
     )
-    v.genres = [Genre(name=g) for g in request.form.getlist('genres')]
+    v.genres = [get_genre(name=g) for g in request.form.getlist('genres')]
 
     error = False
     try:
@@ -417,7 +425,7 @@ def edit_venue(venue_id):
     v.website = request.form.get('website')
     v.seeking_talent = request.form.get('seeking_talent')
     v.seeking_description = request.form.get('seeking_description')
-    v.genres = [Genre(name=g) for g in request.form.getlist('genres')]
+    v.genres = [get_genre(name=g) for g in request.form.getlist('genres')]
 
     # Save into database
     error = False

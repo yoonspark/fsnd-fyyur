@@ -296,6 +296,7 @@ def show_venue(venue_id):
     # Identify past shows
     old_shows = s_query.filter(Show.start_time < time_now()).all()
     old_shows = [s._asdict() for s in old_shows]
+    old_shows.reverse() # For past shows, display latest one first
     for s in old_shows:
         s['start_time'] = s['start_time'].isoformat()
 
@@ -528,6 +529,7 @@ def show_artist(artist_id):
     # Identify past shows
     old_shows = s_query.filter(Show.start_time < time_now()).all()
     old_shows = [s._asdict() for s in old_shows]
+    old_shows.reverse() # For past shows, display latest one first
     for s in old_shows:
         s['start_time'] = s['start_time'].isoformat()
 

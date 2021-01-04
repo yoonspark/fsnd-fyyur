@@ -462,20 +462,47 @@ def artists():
 
     return render_template('pages/artists.html', artists=data)
 
+
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+    # Get search terms
+    search_term = request.form.get('search_term', '')
+
+    # Identify upcoming shows
+    new_shows = db.session.query(
+        Show.id.label('id'),
+        Show.artist_id.label('artist_id'),
+    ).filter(
+        Show.start_time > time_now(),
+    ).subquery()
+
+    # Search artists
+    artist_list = db.session.query(
+        Artist.id.label('id'),
+        Artist.name.label('name'),
+        db.func.count(new_shows.c.id).label('n_new_show'),
+    ).filter(
+        Artist.name.ilike("%{}%".format(search_term)),
+    ).outerjoin(
+        new_shows,
+        Artist.id == new_shows.c.artist_id,
+    ).group_by(
+        Artist.id,
+    ).order_by(
+        Artist.name,
+    ).all()
+
+    # Package response data
+    response = {'count': 0, 'data': []}
+    for a in artist_list:
+        response['count'] = response['count'] + 1
+        response['data'].append({
+            'id': a.id,
+            'name': a.name,
+            'num_upcoming_shows': a.n_new_show,
+        })
+
+    return render_template('pages/search_artists.html', results=response, search_term=search_term)
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):

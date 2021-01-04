@@ -391,6 +391,9 @@ def edit_venue_form(venue_id):
     form.phone.data = venue['phone']
     form.image_link.data = venue['image_link']
     form.facebook_link.data = venue['facebook_link']
+    form.website.data = venue['website']
+    form.seeking_talent.data = venue['seeking_talent']
+    form.seeking_description.data = venue['seeking_description']
     form.genres.data = venue['genres']
 
     return render_template('forms/edit_venue.html', form=form, venue=venue)

@@ -360,35 +360,6 @@ def create_venue():
     return render_template('pages/home.html')
 
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
-def delete_venue(venue_id):
-    v = Venue.query.get(venue_id)
-    if not v:
-        abort(404)
-    venue_name = v.name
-    error = False
-
-    try:
-        for s in v.shows:
-            db.session.delete(s)
-        db.session.delete(v)
-        db.session.commit()
-    except:
-        error = True
-        db.session.rollback()
-        print(sys.exc_info())
-    finally:
-        db.session.close()
-
-    if error:
-        flash('An error occurred. Venue \"' + venue_name + '\" could not be deleted.')
-        abort(400)
-    else:
-        flash('Venue \"' + venue_name + '\" was successfully deleted!')
-
-    return redirect(url_for('index'))
-
-
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue_form(venue_id):
     v = Venue.query.get(venue_id)
@@ -451,6 +422,35 @@ def edit_venue(venue_id):
         flash('Venue <ID: ' + str(vid) + '> was successfully updated!')
 
     return redirect(url_for('show_venue', venue_id=venue_id))
+
+
+@app.route('/venues/<venue_id>', methods=['DELETE'])
+def delete_venue(venue_id):
+    v = Venue.query.get(venue_id)
+    if not v:
+        abort(404)
+    venue_name = v.name
+    error = False
+
+    try:
+        for s in v.shows:
+            db.session.delete(s)
+        db.session.delete(v)
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+
+    if error:
+        flash('An error occurred. Venue \"' + venue_name + '\" could not be deleted.')
+        abort(400)
+    else:
+        flash('Venue \"' + venue_name + '\" was successfully deleted!')
+
+    return redirect(url_for('index'))
 
 #  Artists
 #  ----------------------------------------------------------------

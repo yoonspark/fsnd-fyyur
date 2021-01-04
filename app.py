@@ -382,7 +382,7 @@ def delete_venue(venue_id):
     else:
         flash('Venue \"' + venue_name + '\" was successfully deleted!')
 
-    return None
+    return redirect(url_for('index'))
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])

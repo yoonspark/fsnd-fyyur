@@ -716,10 +716,14 @@ def create_show():
 
     return render_template('pages/home.html')
 
+#----------------------------------------------------------------------------#
+# Error Handlers
+#----------------------------------------------------------------------------#
 
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('errors/404.html'), 404
+
 
 @app.errorhandler(500)
 def server_error(error):
@@ -737,7 +741,7 @@ if not app.debug:
     app.logger.info('errors')
 
 #----------------------------------------------------------------------------#
-# Launch.
+# Launch
 #----------------------------------------------------------------------------#
 
 # Default port:

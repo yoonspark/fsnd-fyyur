@@ -414,6 +414,10 @@ def edit_venue(venue_id):
     v.phone = request.form.get('phone')
     v.image_link = request.form.get('image_link')
     v.facebook_link = request.form.get('facebook_link')
+    v.website = request.form.get('website')
+    v.seeking_talent = request.form.get('seeking_talent')
+    v.seeking_description = request.form.get('seeking_description')
+    v.genres = [Genre(name=g) for g in request.form.getlist('genres')]
 
     # Save into database
     error = False

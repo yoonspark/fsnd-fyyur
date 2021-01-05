@@ -10,5 +10,11 @@ SECRET_KEY = os.urandom(32)
 DEBUG = True
 
 # Specify database connection details
-SQLALCHEMY_DATABASE_URI = 'postgresql://sangyoonpark@localhost:5432/fyyur'
+dialect = 'postgres'
+username = 'sangyoonpark'
+password = '' # No password
+host = 'localhost'
+port = '5432'
+db_name = "fyyur"
+SQLALCHEMY_DATABASE_URI = f'{dialect}://{username}:{password}@{host}:{port}/{db_name}'
 SQLALCHEMY_TRACK_MODIFICATIONS = False

@@ -76,26 +76,12 @@ def index():
 
 @app.route('/venues')
 def venues():
-    # Identify upcoming shows
-    new_shows = db.session.query(
-        Show.id.label('id'),
-        Show.venue_id.label('venue_id'),
-    ).filter(
-        Show.start_time > time_now(),
-    ).subquery()
-
-    # Get desired venue-level information
+    # Get venue info
     venue_list = db.session.query(
         Venue.id.label('id'),
         Venue.name.label('name'),
         Venue.city.label('city'),
         Venue.state.label('state'),
-        db.func.count(Show.id).label('n_new_show'),
-    ).outerjoin(
-        new_shows,
-        Venue.id == new_shows.c.venue_id,
-    ).group_by(
-        Venue.id,
     ).order_by(
         Venue.city,
         Venue.name,
@@ -116,7 +102,6 @@ def venues():
         data[(v.city, v.state)]['venues'].append({
             'id': v.id,
             'name': v.name,
-            'num_upcoming_shows': v.n_new_show,
         })
 
     # Sort and format data

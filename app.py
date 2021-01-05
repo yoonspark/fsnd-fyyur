@@ -586,8 +586,8 @@ def delete_artist(artist_id):
 
 @app.route('/shows')
 def shows():
-    # Get show info
-    shows = db.session.query(
+    # Query all shows
+    s_query = db.session.query(
         Show.start_time.label('start_time'),
         Artist.id.label('artist_id'),
         Artist.name.label('artist_name'),
@@ -604,12 +604,28 @@ def shows():
         Show.start_time,
         Artist.name,
         Venue.name,
-    ).all()
+    )
+
+    # Identify past shows
+    old_shows = s_query.filter(Show.start_time < time_now()).all()
+    old_shows = [s._asdict() for s in old_shows]
+    old_shows.reverse() # For past shows, display latest one first
+    for s in old_shows:
+        s['start_time'] = s['start_time'].isoformat()
+
+    # Identify upcoming shows
+    new_shows = s_query.filter(Show.start_time > time_now()).all()
+    new_shows = [s._asdict() for s in new_shows]
+    for s in new_shows:
+        s['start_time'] = s['start_time'].isoformat()
 
     # Package data for rendering
-    data = [s._asdict() for s in shows]
-    for s in data:
-        s['start_time'] = s['start_time'].isoformat()
+    data = {
+        'past_shows': old_shows,
+        'past_shows_count': len(old_shows),
+        'upcoming_shows': new_shows,
+        'upcoming_shows_count': len(new_shows),
+    }
 
     return render_template('pages/shows.html', shows=data)
 

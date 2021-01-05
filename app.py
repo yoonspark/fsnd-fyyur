@@ -622,6 +622,13 @@ def create_show_form():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show():
+    if not Artist.query.get(request.form['artist_id']):
+        flash('Error: Artist does not exist.')
+        abort(400)
+    if not Venue.query.get(request.form['venue_id']):
+        flash('Error: Venue does not exist.')
+        abort(400)
+
     s = Show(
         start_time = request.form.get('start_time'),
         artist_id = request.form.get('artist_id'),
@@ -649,6 +656,11 @@ def create_show():
 #----------------------------------------------------------------------------#
 # Error Handlers
 #----------------------------------------------------------------------------#
+
+@app.errorhandler(400)
+def bad_request_error(error):
+    return render_template('errors/400.html'), 400
+
 
 @app.errorhandler(404)
 def not_found_error(error):

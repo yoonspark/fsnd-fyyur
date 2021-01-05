@@ -1,6 +1,13 @@
 from datetime import datetime
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
+from wtforms import (
+    IntegerField,
+    StringField,
+    SelectField,
+    SelectMultipleField,
+    DateTimeField,
+    BooleanField,
+)
 from wtforms.validators import DataRequired, AnyOf, URL
 
 genre_list = [
@@ -83,11 +90,13 @@ genre_choices = [(g,g) for g in sorted(genre_list)]
 state_choices = [(s,s) for s in sorted(state_list)]
 
 class ShowForm(Form):
-    artist_id = StringField(
+    artist_id = IntegerField(
         'artist_id',
+        validators=[DataRequired()],
     )
-    venue_id = StringField(
+    venue_id = IntegerField(
         'venue_id',
+        validators=[DataRequired()],
     )
     start_time = DateTimeField(
         'start_time',

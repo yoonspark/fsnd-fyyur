@@ -1,8 +1,10 @@
 import os
-SECRET_KEY = os.urandom(32)
 
 # Get path to current script
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Set a secret key
+SECRET_KEY = os.urandom(32)
 
 # Enable debug mode
 DEBUG = True
